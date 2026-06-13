@@ -1,4 +1,11 @@
 # Add project specific ProGuard rules here.
+-dontobfuscate
+-keepattributes *Annotation*,Signature,Exception
+-keep class com.example.data.** { *; }
+-keep class com.example.MainViewModel { *; }
+-keepclassmembers class * extends androidx.lifecycle.ViewModel {
+    <init>(...);
+}
 # You can control the set of applied configuration files using the
 # proguardFiles setting in build.gradle.
 #

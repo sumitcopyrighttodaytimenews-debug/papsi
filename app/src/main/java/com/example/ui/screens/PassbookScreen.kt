@@ -8,8 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.rounded.TrendingDown
-import androidx.compose.material.icons.rounded.TrendingUp
+import androidx.compose.material.icons.automirrored.rounded.TrendingDown
+import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -49,7 +49,7 @@ fun PassbookScreen(customerId: String, viewModel: MainViewModel) {
                 LazyColumn {
                     items(transactions) { transaction ->
                         val isUdhaari = transaction.type == "udhaari"
-                        val icon = if (isUdhaari) Icons.Rounded.TrendingUp else Icons.Rounded.TrendingDown
+                        val icon = if (isUdhaari) Icons.AutoMirrored.Rounded.TrendingUp else Icons.AutoMirrored.Rounded.TrendingDown
                         val color = if (isUdhaari) Danger else Success
                         val prefix = if (isUdhaari) "+" else "-"
 
