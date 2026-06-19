@@ -46,7 +46,6 @@ android {
     }
     debug {
     }
-    }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
