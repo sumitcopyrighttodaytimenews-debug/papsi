@@ -23,7 +23,7 @@ import com.example.ui.theme.Success
 
 @Composable
 fun PassbookScreen(customerId: String, viewModel: MainViewModel) {
-    val transactions by viewModel.getTransactions(customerId).collectAsState(emptyList())
+    val transactions by remember(customerId) { viewModel.getTransactions(customerId) }.collectAsState(emptyList())
     var transactionToDelete by remember { mutableStateOf<Long?>(null) }
 
     Box(

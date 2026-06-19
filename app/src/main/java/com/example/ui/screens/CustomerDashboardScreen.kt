@@ -1,16 +1,21 @@
 package com.example.ui.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalDrink
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.WineBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -28,9 +33,10 @@ fun CustomerDashboardScreen(
     viewModel: MainViewModel,
     onNavigateToPassbook: () -> Unit
 ) {
-    val customer by viewModel.getCustomer(customerId).collectAsState(null)
+    val customer by remember(customerId) { viewModel.getCustomer(customerId) }.collectAsState(null)
     var udhaarAmt by remember { mutableStateOf("") }
     var jamaAmt by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     if (customer == null) return
 
@@ -70,6 +76,47 @@ fun CustomerDashboardScreen(
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.titleLarge
                 )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Button(
+                onClick = {
+                    val intent = Intent(Intent.ACTION_DIAL).apply {
+                        data = Uri.parse("tel:${customer!!.phone}")
+                    }
+                    if (customer!!.phone.isNotEmpty()) context.startActivity(intent)
+                },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(containerColor = Success),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.Call, contentDescription = "Call")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Call")
+            }
+            
+            Button(
+                onClick = {
+                    val msg = "Namaste ${customer!!.name}, aapka Khata Pro par kul bakaaya ₹${customer!!.balance} hai. Kripaya jald se jald jama karein."
+                    val intent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, msg)
+                    }
+                    context.startActivity(Intent.createChooser(intent, "Share Reminder"))
+                },
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Icon(Icons.Default.Share, contentDescription = "Reminder")
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Reminder")
             }
         }
 
