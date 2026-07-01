@@ -24,9 +24,6 @@ class MainViewModel(
     private val securityRepository: SecurityRepository
 ) : ViewModel() {
 
-    val savedPin: StateFlow<String?> = securityRepository.appPin
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
-
     private val _isUnlocked = MutableStateFlow(false)
     val isUnlocked: StateFlow<Boolean> = _isUnlocked.asStateFlow()
 
@@ -51,20 +48,8 @@ class MainViewModel(
         _searchQuery.value = query
     }
 
-    fun savePin(pin: String) {
-        viewModelScope.launch {
-            securityRepository.savePin(pin)
-            _isUnlocked.value = true
-        }
-    }
-
-    fun unlockApp(pin: String): Boolean {
-        return if (pin == savedPin.value) {
-            _isUnlocked.value = true
-            true
-        } else {
-            false
-        }
+    fun unlockApp() {
+        _isUnlocked.value = true
     }
 
     fun addCustomer(name: String, phone: String, onNavigate: (String) -> Unit) {
@@ -107,6 +92,13 @@ class MainViewModel(
     fun deleteTransaction(transactionId: Long) {
         viewModelScope.launch {
             khataRepository.removeTransaction(transactionId)
+        }
+    }
+
+    fun deleteCustomer(customerId: String, onDeleted: () -> Unit) {
+        viewModelScope.launch {
+            khataRepository.deleteCustomer(customerId)
+            onDeleted()
         }
     }
 }

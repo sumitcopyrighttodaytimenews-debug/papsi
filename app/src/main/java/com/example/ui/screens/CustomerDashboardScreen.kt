@@ -31,11 +31,13 @@ import com.example.ui.theme.Wine
 fun CustomerDashboardScreen(
     customerId: String,
     viewModel: MainViewModel,
-    onNavigateToPassbook: () -> Unit
+    onNavigateToPassbook: () -> Unit,
+    onDeleteSuccess: () -> Unit
 ) {
     val customer by remember(customerId) { viewModel.getCustomer(customerId) }.collectAsState(null)
     var udhaarAmt by remember { mutableStateOf("") }
     var jamaAmt by remember { mutableStateOf("") }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     if (customer == null) return
@@ -246,6 +248,43 @@ fun CustomerDashboardScreen(
             Icon(Icons.Default.History, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Passbook Dekhein", fontWeight = FontWeight.Bold)
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = { showDeleteConfirm = true },
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Danger,
+                contentColor = androidx.compose.ui.graphics.Color.White
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("Khata Delete Karein", fontWeight = FontWeight.Bold)
+        }
+
+        if (showDeleteConfirm) {
+            AlertDialog(
+                onDismissRequest = { showDeleteConfirm = false },
+                title = { Text("Delete Khata?") },
+                text = { Text("Kya aap sach me is customer ka khata hamesha ke liye delete karna chahte hain? Iski saari entry delete ho jayengi.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showDeleteConfirm = false
+                        viewModel.deleteCustomer(customerId) {
+                            onDeleteSuccess()
+                        }
+                    }) {
+                        Text("Haan, Delete Karein", color = Danger)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteConfirm = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }

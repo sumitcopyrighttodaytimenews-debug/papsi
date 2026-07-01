@@ -36,6 +36,12 @@ interface KhataDao {
     @Query("DELETE FROM transactions WHERE id = :transactionId")
     suspend fun deleteTransaction(transactionId: Long)
 
+    @Query("DELETE FROM customers WHERE id = :customerId")
+    suspend fun deleteCustomer(customerId: String)
+
+    @Query("DELETE FROM transactions WHERE customerId = :customerId")
+    suspend fun deleteTransactionsForCustomer(customerId: String)
+
     @RoomTransaction
     suspend fun addTransaction(transaction: Transaction) {
         insertTransaction(transaction)

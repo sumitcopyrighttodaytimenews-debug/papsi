@@ -1,7 +1,7 @@
 package com.example
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +23,7 @@ import com.example.data.SecurityRepository
 import com.example.ui.screens.*
 import com.example.ui.theme.MyApplicationTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -131,6 +131,10 @@ class MainActivity : ComponentActivity() {
                             val id = backStackEntry.arguments?.getString("customerId") ?: ""
                             CustomerDashboardScreen(id, viewModel, onNavigateToPassbook = {
                                 navController.navigate("passbook/$id")
+                            }, onDeleteSuccess = {
+                                navController.navigate("home") {
+                                    popUpTo("home") { inclusive = true }
+                                }
                             })
                         }
                         composable("passbook/{customerId}") { backStackEntry ->

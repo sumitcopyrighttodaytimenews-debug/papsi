@@ -1,29 +1,67 @@
 package com.example.ui.screens
 
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import com.example.MainViewModel
 import com.example.ui.theme.Primary
 
 @Composable
 fun AppLockScreen(viewModel: MainViewModel) {
-    val savedPin by viewModel.savedPin.collectAsState()
-    var inputPin by remember { mutableStateOf("") }
-    var errorMsg by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    var authError by remember { mutableStateOf("") }
 
-    val isNewPin = savedPin == null
+    val showBiometricPrompt = {
+        if (context is FragmentActivity) {
+            val executor = ContextCompat.getMainExecutor(context)
+            val biometricPrompt = BiometricPrompt(
+                context,
+                executor,
+                object : BiometricPrompt.AuthenticationCallback() {
+                    override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                        super.onAuthenticationError(errorCode, errString)
+                        authError = "Error: $errString"
+                    }
+
+                    override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                        super.onAuthenticationSucceeded(result)
+                        viewModel.unlockApp()
+                    }
+
+                    override fun onAuthenticationFailed() {
+                        super.onAuthenticationFailed()
+                        authError = "Authentication failed. Try again."
+                    }
+                }
+            )
+
+            val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Khata Pro Max")
+                .setSubtitle("Use your device lock to enter")
+                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+                .build()
+
+            biometricPrompt.authenticate(promptInfo)
+        } else {
+            authError = "Unsupported activity context"
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        showBiometricPrompt()
+    }
 
     Box(
         modifier = Modifier
@@ -36,38 +74,22 @@ fun AppLockScreen(viewModel: MainViewModel) {
             modifier = Modifier.padding(24.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Lock,
+                imageVector = Icons.Default.LockOpen,
                 contentDescription = "Lock",
                 tint = Primary,
                 modifier = Modifier.size(64.dp).padding(bottom = 16.dp)
             )
 
             Text(
-                text = if (isNewPin) "Set New 4-Digit PIN" else "Enter App PIN",
+                text = "App is Locked",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            OutlinedTextField(
-                value = inputPin,
-                onValueChange = { if (it.length <= 4) inputPin = it },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-                visualTransformation = PasswordVisualTransformation(),
-                textStyle = LocalTextStyle.current.copy(
-                    textAlign = TextAlign.Center,
-                    fontSize = 24.sp,
-                    letterSpacing = 8.sp
-                ),
-                shape = MaterialTheme.shapes.large,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            )
-
-            if (errorMsg.isNotEmpty()) {
+            if (authError.isNotEmpty()) {
                 Text(
-                    text = errorMsg,
+                    text = authError,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(bottom = 16.dp)
@@ -75,34 +97,14 @@ fun AppLockScreen(viewModel: MainViewModel) {
             }
 
             Button(
-                onClick = {
-                    if (inputPin.length == 4) {
-                        if (isNewPin) {
-                            viewModel.savePin(inputPin)
-                        } else {
-                            if (!viewModel.unlockApp(inputPin)) {
-                                errorMsg = "Galat PIN! Dubara try karein."
-                                inputPin = ""
-                            }
-                        }
-                    } else {
-                        errorMsg = "Kripya 4-digit ka PIN daalein!"
-                    }
-                },
+                onClick = showBiometricPrompt,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = MaterialTheme.shapes.large
             ) {
-                Text(text = if (isNewPin) "Save PIN" else "Unlock App", fontSize = 16.sp)
+                Text(text = "Unlock App", fontSize = 16.sp)
             }
-
-            Text(
-                text = "Security ke liye 4-digit PIN zaruri hai.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 16.dp)
-            )
         }
     }
 }

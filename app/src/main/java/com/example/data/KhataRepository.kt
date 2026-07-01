@@ -20,4 +20,9 @@ class KhataRepository(private val khataDao: KhataDao) {
     suspend fun removeTransaction(transactionId: Long) {
         khataDao.removeTransaction(transactionId)
     }
+
+    suspend fun deleteCustomer(customerId: String) {
+        khataDao.deleteCustomer(customerId)
+        khataDao.deleteTransactionsForCustomer(customerId)
+    }
 }
